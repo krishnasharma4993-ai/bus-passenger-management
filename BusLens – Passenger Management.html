@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BusLens – Passenger Management</title>
+<style>
+:root{--bg:#f3effb;--card:#fff;--text:#241a45;--muted:#7a6f99;--p:#7c4dff;--pd:#4527a0;--pl:#ede7f6;--line:#e6def7;--red:#e5384f;--green:#2e9e5b;--term:#1a1033;--termT:#d9cff5;--input:#faf8ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#120d22;--card:#1c1535;--text:#eee9fb;--muted:#a99fc7;--line:#33285a;--pl:#2a1f55;--term:#0d0820;--input:#150f2b}}
+:root[data-theme="dark"]{--bg:#120d22;--card:#1c1535;--text:#eee9fb;--muted:#a99fc7;--line:#33285a;--pl:#2a1f55;--term:#0d0820;--input:#150f2b}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+aside{background:linear-gradient(170deg,#2b1566,#4527a0);color:#fff;padding:24px 18px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+aside h2{margin:0;font-size:22px}aside p{margin:0;font-size:12px;color:#d1c4ff}
+.ds{margin-top:auto;display:grid;gap:8px;font-size:12.5px;color:#e4dcff}
+.ds h4{margin:0 0 2px;font-size:11px;letter-spacing:1px;color:#cdbfff}
+.ds div{display:flex;justify-content:space-between}.ds b{color:#fff;font-size:14px}
+main{padding:22px;display:grid;gap:16px;align-content:start;min-width:0}
+h1{margin:0;font-size:24px}.sub{margin:3px 0 0;color:var(--muted);font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.kpi span{font-size:12px;font-weight:600;color:var(--muted)}.kpi b{display:block;font-size:26px;margin-top:4px}
+.kpi.hero{background:linear-gradient(135deg,#7c4dff,#4527a0);color:#fff;border:0}.kpi.hero span{color:#e0d4ff}
+.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px 18px;min-width:0}
+.card h3{margin:0 0 10px;font-size:15px}
+input,select{width:100%;font:inherit;font-size:14px;color:var(--text);background:var(--input);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--p);outline-offset:2px}
+label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin:0 0 4px}
+.btn{font:inherit;font-weight:700;font-size:13px;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;background:var(--p);color:#fff}
+.btn.alt{background:var(--pd)}.btn.soft{background:var(--pl);color:var(--p)}
+.wrap{overflow-x:auto;margin-top:10px;border:1px solid var(--line);border-radius:12px;max-height:290px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{background:var(--pl);color:var(--p);text-align:left;padding:8px 10px;position:sticky;top:0}
+td{padding:8px 10px;border-top:1px solid var(--line)}
+td:last-child{text-align:right}
+.drop{border:0;background:none;color:var(--red);font-weight:700;cursor:pointer;font:inherit;font-size:13px}
+.msg{min-height:20px;margin-top:8px;font-size:13px;font-weight:600}
+ol{margin:0;padding:0;list-style:none;max-height:170px;overflow-y:auto;border:1px solid var(--line);border-radius:12px}
+li{padding:7px 12px;font-size:13.5px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+li:first-child{border-top:0;background:var(--pl);font-weight:700}
+li em{font-style:normal;color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.seats{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:12px 0 4px}
+.seats i{height:24px;border-radius:8px;background:var(--pl)}.seats i.on{background:var(--p)}
+.cap{font-size:12px;color:var(--muted)}
+pre{margin:0;background:var(--term);color:var(--termT);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.5;height:150px;overflow:auto;white-space:pre-wrap}
+@media (max-width:820px){body{grid-template-columns:1fr}aside{display:none}.cols{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}main{padding:16px}}
+</style>
+</head>
+<body>
+<aside>
+  <h2>BusLens</h2><p>Passenger Management</p>
+  <div class="ds"><h4>LIVE STRUCTURES</h4>
+    <div>Queue size<b id="sQ">0</b></div><div>ArrayList size<b id="sL">0</b></div><div>Last bin. steps<b id="sS">0</b></div>
+  </div>
+</aside>
+<main>
+  <div><h1>Bus Passenger Management</h1><p class="sub">Queue at the stop, sorted list on the bus, binary search by name</p></div>
+  <div class="kpis">
+    <div class="kpi hero"><span>Waiting in queue</span><b id="kW">0</b></div>
+    <div class="kpi"><span>On board</span><b id="kO">0</b></div>
+    <div class="kpi"><span>Seats left</span><b id="kL">0</b></div>
+    <div class="kpi"><span>Fare collected</span><b id="kF">0</b></div>
+  </div>
+  <div class="cols">
+    <section class="card">
+      <h3>Passengers on board (ArrayList)</h3>
+      <label for="q">Search by name (binary search)</label>
+      <input id="q" placeholder="Start typing a name…" autocomplete="off">
+      <div class="wrap"><table><thead><tr><th>Ticket</th><th>Passenger</th><th>Stop</th><th>Fare</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+      <div class="msg" id="msg"></div>
+    </section>
+    <section class="card">
+      <h3>Boarding queue (FIFO)</h3>
+      <ol id="queue"></ol>
+      <div class="row">
+        <div><label for="nm">Passenger name</label><input id="nm" placeholder="e.g. Asha Rao"></div>
+        <div><label for="st">Stop</label><select id="st"></select></div>
+      </div>
+      <div class="row"><button class="btn" id="join">Join queue</button><button class="btn alt" id="board">Board next</button></div>
+      <div class="seats" id="seats"></div><div class="cap" id="cap"></div>
+      <h3 style="margin-top:14px">Binary search trace</h3>
+      <pre id="term"></pre>
+    </section>
+  </div>
+</main>
+<script>
+var CAP=10,STOPS=["Central","Airport","Market","University","Station"],FARES=[20,60,15,25,30];
+var queue=[],onboard=[],index=new Map(),next=1001,lastSteps=0,trace="";
+var $=function(i){return document.getElementById(i)};
+var IDLE="$ binary-search --trace\nType a passenger name to watch every step.";
+
+function join(name,stop){var p={id:"T"+(next++),name:name.trim(),stop:stop,fare:FARES[STOPS.indexOf(stop)]};index.set(p.id,p);queue.push(p);return p}
+function lowerBound(key){var lo=0,hi=onboard.length,s=0,t="";
+  while(lo<hi){var mid=(lo+hi)>>>1;s++;var n=onboard[mid].name,right=n.toLowerCase()<key;
+    t+="step "+s+"  low="+lo+" high="+hi+" mid="+mid+"\n   \""+n+"\" "+(right?"<":">=")+" \""+key+"\" -> go "+(right?"right":"left")+"\n";
+    if(right)lo=mid+1;else hi=mid}
+  lastSteps=s;trace=t;return lo}
+function boardNext(){if(!queue.length||onboard.length>=CAP)return null;
+  var p=queue.shift();onboard.splice(lowerBound(p.name.toLowerCase()),0,p);return p}
+function search(text){var k=text.trim().toLowerCase(),r=[];
+  for(var i=lowerBound(k);i<onboard.length&&onboard[i].name.toLowerCase().indexOf(k)===0;i++)r.push(onboard[i]);return r}
+
+function say(m,c){var e=$("msg");e.textContent=m;e.style.color=c||"var(--muted)"}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function render(list){
+  $("rows").innerHTML=list.map(function(p){return"<tr><td>"+p.id+"</td><td>"+esc(p.name)+"</td><td>"+p.stop+"</td><td>Rs "+p.fare+'</td><td><button class="drop" data-id="'+p.id+'">Drop</button></td></tr>'}).join("")||'<tr><td colspan="5" style="color:var(--muted)">No passengers to show</td></tr>';
+  $("queue").innerHTML=queue.map(function(p,i){return"<li><span>"+(i+1)+". "+esc(p.name)+"</span><em>"+p.stop+"</em></li>"}).join("")||'<li style="background:none;font-weight:400;color:var(--muted)">Nobody is waiting</li>';
+  var fare=onboard.reduce(function(a,p){return a+p.fare},0);
+  $("kW").textContent=queue.length;$("kO").textContent=onboard.length;$("kL").textContent=CAP-onboard.length;$("kF").textContent="Rs "+fare;
+  $("sQ").textContent=queue.length;$("sL").textContent=onboard.length;$("sS").textContent=lastSteps;
+  var s="";for(var i=0;i<CAP;i++)s+='<i class="'+(i<onboard.length?"on":"")+'"></i>';
+  $("seats").innerHTML=s;$("cap").textContent=onboard.length+" of "+CAP+" seats taken"}
+function run(){var q=$("q").value.trim();
+  if(!q){render(onboard);$("term").textContent=IDLE;say("Showing all passengers on board");return}
+  var r=search(q);render(r);
+  $("term").textContent='$ binary-search "'+q+'"\n'+trace+"found "+r.length+" match(es) in "+lastSteps+" steps";
+  say(r.length?r.length+" passenger(s) found":'No passenger on board starts with "'+q+'"',r.length?"var(--green)":"var(--red)");
+  $("sS").textContent=lastSteps}
+
+STOPS.forEach(function(s){var o=document.createElement("option");o.textContent=s;$("st").appendChild(o)});
+$("q").addEventListener("input",run);
+function doJoin(){var n=$("nm").value.trim();if(!n){say("Enter a passenger name first","var(--red)");return}
+  var p=join(n,$("st").value);$("nm").value="";run();say(p.name+" joined the queue with ticket "+p.id,"var(--green)")}
+$("join").onclick=doJoin;
+$("nm").addEventListener("keydown",function(e){if(e.key==="Enter")doJoin()});
+$("board").onclick=function(){
+  if(!queue.length){say("Nobody is waiting at the stop","var(--red)");return}
+  if(onboard.length>=CAP){say("Bus is full – drop someone first","var(--red)");return}
+  var p=boardNext();$("q").value="";run();say(p.name+" boarded (dequeued from the front)","var(--green)")};
+$("rows").addEventListener("click",function(e){var id=e.target.getAttribute("data-id");if(!id)return;
+  var p=index.get(id);onboard.splice(onboard.indexOf(p),1);index.delete(id);run();say(p.name+" got off the bus")});
+
+["Meera Nair","Arjun Rao","Divya Shah","Imran Khan","Sara Thomas","Kabir Singh","Anita Das","Rohit Verma","Priya Menon","Neil Fernandes","Tara Iyer","Vikram Joshi","Zoya Ali","Leela Pillai"].forEach(function(n,i){join(n,STOPS[i%5])});
+for(var i=0;i<6;i++)boardNext();
+render(onboard);$("term").textContent=IDLE;say("Bus is ready. Passengers on board are kept sorted by name.");
+</script>
+</body>
+</html>
